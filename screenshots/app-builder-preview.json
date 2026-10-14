@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "RAYMEDIA",
+      "hasCanvas": false,
+      "bodyTextLen": 255,
+      "bodyTextHash": "64d5547abf6eb34896741a4d9130a305ed97aafe5641eb319e126474d62a5738",
+      "bodyTextPrefix": "RAYMEDIA Search local services Find in Randburg Choose a categor",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "RAYMEDIA",
+      "hasCanvas": false,
+      "bodyTextLen": 255,
+      "bodyTextHash": "64d5547abf6eb34896741a4d9130a305ed97aafe5641eb319e126474d62a5738",
+      "bodyTextPrefix": "RAYMEDIA Search local services Find in Randburg Choose a categor",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
