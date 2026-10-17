@@ -1,1 +1,418 @@
+import { Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { ChevronLeft } from "lucide-react";
+import { useEffect, useState } from "react";
+import { addBusiness, checkPin, removeBusiness, saveBanner } from "@/lib/raymedia/api";
+import { CATEGORIES, categoryLabel, type Directory } from "@/lib/raymedia/model";
 
+const PIN_KEY = "raymedia-admin-pin";
+
+const fieldClass =
+  "h-12 w-full rounded-xl border border-line bg-surface px-3 text-base text-fg outline-none placeholder:text-muted focus:border-gold";
+
+type SlideDraft = {
+  key: string;
+  imageUrl: string;
+  title: string;
+  subtitle: string;
+  link: string;
+};
+
+function draftsFrom(directory: Directory): SlideDraft[] {
+  const source = directory.slides.length
+    ? directory.slides
+    : [{ id: 0, sortOrder: 0, imageUrl: "", title: "", subtitle: "", link: "" }];
+  return source.map((slide) => ({
+    key: `slide-${slide.id}-${slide.sortOrder}`,
+    imageUrl: slide.imageUrl,
+    title: slide.title,
+    subtitle: slide.subtitle,
+    link: slide.link,
+  }));
+}
+
+export function AdminScreen({ directory }: { directory: Directory }) {
+  const verify = useServerFn(checkPin);
+  const saveBannerFn = useServerFn(saveBanner);
+  const addBusinessFn = useServerFn(addBusiness);
+  const removeBusinessFn = useServerFn(removeBusiness);
+
+  const [pin, setPin] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+  const [gateError, setGateError] = useState("");
+  const [checking, setChecking] = useState(false);
+
+  const [intervalSeconds, setIntervalSeconds] = useState(directory.intervalSeconds);
+  const [slides, setSlides] = useState<SlideDraft[]>(() => draftsFrom(directory));
+  const [bannerNote, setBannerNote] = useState("");
+  const [bannerError, setBannerError] = useState("");
+  const [savingBanner, setSavingBanner] = useState(false);
+
+  const [category, setCategory] = useState<string>(CATEGORIES[0].id);
+  const [name, setName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [offer, setOffer] = useState("");
+  const [area, setArea] = useState("");
+  const [message, setMessage] = useState("");
+  const [feedNote, setFeedNote] = useState("");
+  const [feedError, setFeedError] = useState("");
+  const [savingFeed, setSavingFeed] = useState(false);
+  const [listings, setListings] = useState(directory.businesses);
+  const [pendingRemove, setPendingRemove] = useState<number | null>(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem(PIN_KEY);
+    if (!stored) return;
+    let cancelled = false;
+    verify({ data: { pin: stored } })
+      .then(() => {
+        if (cancelled) return;
+        setPin(stored);
+        setUnlocked(true);
+      })
+      .catch(() => {
+        sessionStorage.removeItem(PIN_KEY);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [verify]);
+
+  async function unlock(event: React.FormEvent) {
+    event.preventDefault();
+    setChecking(true);
+    setGateError("");
+    try {
+      await verify({ data: { pin } });
+      sessionStorage.setItem(PIN_KEY, pin);
+      setUnlocked(true);
+    } catch {
+      setGateError("Wrong password");
+    } finally {
+      setChecking(false);
+    }
+  }
+
+  async function onSaveBanner(event: React.FormEvent) {
+    event.preventDefault();
+    setSavingBanner(true);
+    setBannerError("");
+    setBannerNote("");
+    try {
+      const next = await saveBannerFn({
+        data: {
+          pin,
+          intervalSeconds,
+          slides: slides.map(({ imageUrl, title, subtitle, link }) => ({
+            imageUrl,
+            title,
+            subtitle,
+            link,
+          })),
+        },
+      });
+      setSlides(draftsFrom(next));
+      setIntervalSeconds(next.intervalSeconds);
+      setListings(next.businesses);
+      setBannerNote("Saved. The home banner is live for everyone.");
+    } catch (error) {
+      setBannerError(error instanceof Error ? error.message : "Could not save the banner");
+    } finally {
+      setSavingBanner(false);
+    }
+  }
+
+  async function onAddBusiness(event: React.FormEvent) {
+    event.preventDefault();
+    setSavingFeed(true);
+    setFeedError("");
+    setFeedNote("");
+    try {
+      const next = await addBusinessFn({
+        data: { pin, category, name, whatsapp, offer, area, message },
+      });
+      setListings(next.businesses);
+      setName("");
+      setWhatsapp("");
+      setOffer("");
+      setArea("");
+      setMessage("");
+      setFeedNote("Live on the home page for every visitor.");
+    } catch (error) {
+      setFeedError(error instanceof Error ? error.message : "Could not add that business");
+    } finally {
+      setSavingFeed(false);
+    }
+  }
+
+  async function onRemove(id: number) {
+    setFeedError("");
+    try {
+      const next = await removeBusinessFn({ data: { pin, id } });
+      setListings(next.businesses);
+      setPendingRemove(null);
+    } catch (error) {
+      setFeedError(error instanceof Error ? error.message : "Could not remove that listing");
+    }
+  }
+
+  return (
+    <div className="min-h-dvh bg-bg text-fg">
+      <div className="mx-auto w-full max-w-[440px] px-4 pb-16 pt-5">
+        <Link to="/" search={{ cat: "" }} className="inline-flex h-11 items-center gap-1 text-sm text-muted">
+          <ChevronLeft className="size-4" aria-hidden="true" />
+          Home
+        </Link>
+        <p className="mt-3 font-display text-sm font-bold tracking-[0.18em] text-gold">RAYMEDIA ADMIN</p>
+        <h1 className="mt-1 font-display text-3xl font-extrabold text-fg">Owner controls</h1>
+
+        {unlocked ? null : (
+          <form onSubmit={unlock} className="mt-6 rounded-card border border-gold/70 bg-card p-4">
+            <p className="text-sm leading-relaxed text-muted">
+              This page is only for you. Visitors never see these controls.
+            </p>
+            <label className="mt-4 block text-xs font-medium tracking-wide text-muted" htmlFor="pin">
+              Password
+            </label>
+            <input
+              id="pin"
+              type="password"
+              autoComplete="current-password"
+              value={pin}
+              onChange={(event) => setPin(event.target.value)}
+              className={`${fieldClass} mt-2`}
+            />
+            {gateError ? <p className="mt-2 text-sm text-gold">{gateError}</p> : null}
+            <button
+              type="submit"
+              disabled={checking || pin.length === 0}
+              className="mt-4 h-12 w-full rounded-xl bg-gold text-sm font-bold tracking-wide text-ink disabled:opacity-60"
+            >
+              {checking ? "Checking…" : "ENTER ADMIN"}
+            </button>
+          </form>
+        )}
+
+        {unlocked ? (
+          <>
+            <form onSubmit={onSaveBanner} className="mt-6 rounded-card border border-line bg-card p-4">
+              <h2 className="text-sm font-bold tracking-wide text-gold">BANNER CONTROL</h2>
+              <p className="mt-1 text-sm text-muted">Slideshow timer for the sponsored card on the home page.</p>
+              <label className="mt-4 block text-xs font-medium text-muted" htmlFor="interval">
+                Ad interval (seconds)
+              </label>
+              <input
+                id="interval"
+                type="number"
+                min={2}
+                max={30}
+                value={intervalSeconds}
+                onChange={(event) => setIntervalSeconds(Number(event.target.value))}
+                className={`${fieldClass} mt-2`}
+              />
+
+              <div className="mt-4 flex flex-col gap-3">
+                {slides.map((slide, index) => (
+                  <fieldset key={slide.key} className="rounded-2xl border border-line bg-bg p-3">
+                    <legend className="px-1 text-xs font-semibold tracking-wide text-gold">Slide {index + 1}</legend>
+                    <label className="mt-2 block text-xs text-muted">
+                      Image URL
+                      <input
+                        value={slide.imageUrl}
+                        onChange={(event) => updateSlide(index, { imageUrl: event.target.value })}
+                        placeholder="https://i.postimg.cc/…"
+                        className={`${fieldClass} mt-1`}
+                      />
+                    </label>
+                    <label className="mt-2 block text-xs text-muted">
+                      Big title
+                      <input
+                        value={slide.title}
+                        onChange={(event) => updateSlide(index, { title: event.target.value })}
+                        placeholder="Raymedia"
+                        className={`${fieldClass} mt-1`}
+                      />
+                    </label>
+                    <label className="mt-2 block text-xs text-muted">
+                      Small subtitle
+                      <input
+                        value={slide.subtitle}
+                        onChange={(event) => updateSlide(index, { subtitle: event.target.value })}
+                        placeholder="Advertise in Randburg from R250/month"
+                        className={`${fieldClass} mt-1`}
+                      />
+                    </label>
+                    <label className="mt-2 block text-xs text-muted">
+                      Link
+                      <input
+                        value={slide.link}
+                        onChange={(event) => updateSlide(index, { link: event.target.value })}
+                        placeholder="https://wa.me/27…"
+                        className={`${fieldClass} mt-1`}
+                      />
+                    </label>
+                    {slides.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => setSlides((current) => current.filter((_, item) => item !== index))}
+                        className="mt-2 h-10 text-sm text-muted"
+                      >
+                        Remove slide
+                      </button>
+                    ) : null}
+                  </fieldset>
+                ))}
+              </div>
+
+              {slides.length < 8 ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSlides((current) => [
+                      ...current,
+                      { key: `new-${Date.now()}`, imageUrl: "", title: "", subtitle: "", link: "" },
+                    ])
+                  }
+                  className="mt-3 h-11 w-full rounded-xl border border-line text-sm font-semibold text-fg"
+                >
+                  + Add slide
+                </button>
+              ) : null}
+
+              {bannerError ? <p className="mt-3 text-sm text-gold">{bannerError}</p> : null}
+              {bannerNote ? <p className="mt-3 text-sm text-muted">{bannerNote}</p> : null}
+              <button
+                type="submit"
+                disabled={savingBanner}
+                className="mt-4 h-12 w-full rounded-xl bg-gold text-sm font-bold tracking-wide text-ink disabled:opacity-60"
+              >
+                {savingBanner ? "SAVING…" : "SAVE BANNER + HOME UPDATES"}
+              </button>
+            </form>
+
+            <form onSubmit={onAddBusiness} className="mt-4 rounded-card border border-line bg-card p-4">
+              <h2 className="text-sm font-bold tracking-wide text-gold">ADD BUSINESS</h2>
+              <p className="mt-1 text-sm text-muted">Saves for all visitors. Offer shows on the listing.</p>
+              <label className="mt-4 block text-xs font-medium text-muted" htmlFor="category">
+                Category
+              </label>
+              <select
+                id="category"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                className={`${fieldClass} mt-2`}
+              >
+                {CATEGORIES.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+              <label className="mt-3 block text-xs text-muted" htmlFor="biz-name">
+                Business name
+              </label>
+              <input id="biz-name" value={name} onChange={(event) => setName(event.target.value)} className={`${fieldClass} mt-1`} />
+              <label className="mt-3 block text-xs text-muted" htmlFor="biz-wa">
+                WhatsApp
+              </label>
+              <input
+                id="biz-wa"
+                value={whatsapp}
+                onChange={(event) => setWhatsapp(event.target.value)}
+                placeholder="27…"
+                inputMode="tel"
+                className={`${fieldClass} mt-1`}
+              />
+              <label className="mt-3 block text-xs text-muted" htmlFor="biz-offer">
+                Offer
+              </label>
+              <input
+                id="biz-offer"
+                value={offer}
+                onChange={(event) => setOffer(event.target.value)}
+                placeholder="eg. 20% off haircuts"
+                className={`${fieldClass} mt-1`}
+              />
+              <label className="mt-3 block text-xs text-muted" htmlFor="biz-area">
+                Address / area
+              </label>
+              <input
+                id="biz-area"
+                value={area}
+                onChange={(event) => setArea(event.target.value)}
+                placeholder="eg. Randburg"
+                className={`${fieldClass} mt-1`}
+              />
+              <label className="mt-3 block text-xs text-muted" htmlFor="biz-message">
+                WhatsApp message
+              </label>
+              <input
+                id="biz-message"
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                placeholder="Hi, I found you on Raymedia"
+                className={`${fieldClass} mt-1`}
+              />
+              {feedError ? <p className="mt-3 text-sm text-gold">{feedError}</p> : null}
+              {feedNote ? <p className="mt-3 text-sm text-muted">{feedNote}</p> : null}
+              <button
+                type="submit"
+                disabled={savingFeed}
+                className="mt-4 h-12 w-full rounded-xl bg-gold text-sm font-bold tracking-wide text-ink disabled:opacity-60"
+              >
+                {savingFeed ? "SAVING…" : "SAVE TO FEED — MAKE LIVE"}
+              </button>
+            </form>
+
+            <section className="mt-4">
+              <p className="text-xs tracking-wide text-muted">
+                Saved ({listings.length}) · visible to everyone
+              </p>
+              <ul className="mt-2 flex flex-col gap-2">
+                {listings.map((business) => (
+                  <li key={business.id} className="rounded-2xl border border-line bg-card px-3 py-3">
+                    <p className="text-sm font-semibold text-fg">{business.name}</p>
+                    <p className="text-xs text-muted">
+                      {categoryLabel(business.category)}
+                      {business.offer ? ` · ${business.offer}` : ""}
+                    </p>
+                    {pendingRemove === business.id ? (
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onRemove(business.id)}
+                          className="h-10 rounded-full bg-gold px-3 text-xs font-bold text-ink"
+                        >
+                          Remove
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPendingRemove(null)}
+                          className="h-10 rounded-full px-3 text-xs text-muted"
+                        >
+                          Keep
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setPendingRemove(business.id)}
+                        className="mt-1 h-10 text-xs text-muted"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+
+  function updateSlide(index: number, patch: Partial<SlideDraft>) {
+    setSlides((current) => current.map((slide, item) => (item === index ? { ...slide, ...patch } : slide)));
+  }
+}
