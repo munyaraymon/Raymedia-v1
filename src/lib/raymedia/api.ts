@@ -62,7 +62,39 @@ function mapBusiness(row: BusinessRow): Business {
   };
 }
 
+const FALLBACK_DIRECTORY: Directory = {
+  intervalSeconds: 5,
+  slides: [
+    {
+      id: 1,
+      sortOrder: 0,
+      imageUrl: "",
+      title: "Premium Banner — Your Business Here",
+      subtitle: "rotating banner ad",
+      link: "",
+    },
+    {
+      id: 2,
+      sortOrder: 1,
+      imageUrl: "",
+      title: "Advertise in Randburg from R250/month",
+      subtitle: "Tap to open WhatsApp",
+      link: "https://wa.me/27739422476",
+    },
+  ],
+  businesses: [],
+};
+
 async function readDirectory(): Promise<Directory> {
+  try {
+    return await readDirectoryFromDb();
+  } catch (error) {
+    console.error("[raymedia] database unavailable, showing the public directory", error);
+    return FALLBACK_DIRECTORY;
+  }
+}
+
+async function readDirectoryFromDb(): Promise<Directory> {
   const sql = await getSql();
   const settings = await sql<{ interval_seconds: number }>`
     select interval_seconds from settings where id = 1

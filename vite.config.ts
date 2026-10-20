@@ -157,6 +157,11 @@ export default defineConfig(({ command, isPreview }) => ({
     strictPort: true,
   },
   resolve: { tsconfigPaths: true },
+  ssr: {
+    // Keep PGLite on Node's resolver so pglite.data sits beside the real
+    // package instead of a bundled chunk that cannot see the file.
+    external: ["@electric-sql/pglite"],
+  },
   plugins: [
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.
@@ -175,6 +180,8 @@ export default defineConfig(({ command, isPreview }) => ({
             // manifest + head-tag middleware). Nitro v3 defaults serverDir to
             // false, so removing this silently unwires /?install=1 on deploys.
             serverDir: "./server",
+            // Copy every PGLite file (wasm + pglite.data), not only traced JS.
+            traceDeps: ["@electric-sql/pglite*"],
           }),
         ]
       : []),
