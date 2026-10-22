@@ -1,12 +1,15 @@
 export const CATEGORIES = [
-  { id: "beauty", label: "Beauty & Care", home: true },
-  { id: "auto", label: "Auto & Repair", home: true },
-  { id: "health", label: "Health", home: true },
-  { id: "retail", label: "Shopping & Retail", home: true },
-  { id: "edu", label: "Education & Kids", home: true },
-  { id: "deals", label: "Deals from Amazon", home: true },
-  { id: "farm", label: "Farm Services", home: false },
-  { id: "other", label: "Other", home: false },
+  { id: "food", label: "Food & Takeaway", short: "Food", home: true },
+  { id: "home", label: "Home Services", short: "Home", home: true },
+  { id: "beauty", label: "Beauty & Care", short: "Beauty", home: true },
+  { id: "auto", label: "Auto & Repair", short: "Auto", home: true },
+  { id: "health", label: "Health", short: "Health", home: true },
+  { id: "retail", label: "Shopping & Retail", short: "Shopping", home: true },
+  { id: "deals", label: "Deals from Amazon", short: "Amazon", home: true },
+  { id: "edu", label: "Education & Kids", short: "Kids", home: true },
+  { id: "farm", label: "Farm Services", short: "Farm", home: true },
+  { id: "other", label: "Other", short: "Other", home: true },
+  { id: "property", label: "Rooms & Flats", short: "Rooms & Flats", home: false },
 ] as const;
 
 export type CategoryId = (typeof CATEGORIES)[number]["id"];

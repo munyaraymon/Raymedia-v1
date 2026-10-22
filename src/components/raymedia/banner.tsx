@@ -5,9 +5,11 @@ import type { Slide } from "@/lib/raymedia/model";
 export function SponsorBanner({
   slides,
   intervalSeconds,
+  docked = false,
 }: {
   slides: Slide[];
   intervalSeconds: number;
+  docked?: boolean;
 }) {
   const [index, setIndex] = useState(0);
   const [broken, setBroken] = useState<Record<number, boolean>>({});
@@ -34,7 +36,7 @@ export function SponsorBanner({
   };
 
   return (
-    <section className="mt-5" aria-roledescription="carousel" aria-label="Sponsored">
+    <section className={docked ? "" : "mt-5"} aria-roledescription="carousel" aria-label="Sponsored">
       <button
         type="button"
         onClick={open}
