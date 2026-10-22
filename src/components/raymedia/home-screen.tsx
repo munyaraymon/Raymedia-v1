@@ -144,6 +144,7 @@ export function HomeScreen({
             </div>
           </>
         )}
+        <ContactUs />
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-30 flex justify-center bg-gradient-to-t from-bg from-70% to-transparent px-4 pb-3 pt-6">
@@ -152,6 +153,27 @@ export function HomeScreen({
         </div>
       </div>
     </div>
+  );
+}
+
+function ContactUs() {
+  const href = whatsappHref("27739422476", "Hi RAYMEDIA, I would like to advertise or list on the directory.");
+  if (!href) return null;
+  return (
+    <section className="mt-6 rounded-card border border-line bg-card px-4 py-4">
+      <h2 className="font-display text-lg font-bold text-gold">Contact us</h2>
+      <p className="mt-1 text-sm leading-relaxed text-muted">
+        Book the banner, list a business, or ask about a room in Randburg.
+      </p>
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 inline-flex h-11 items-center rounded-full bg-gold px-4 text-sm font-semibold text-ink"
+      >
+        WhatsApp 073 942 2476
+      </a>
+    </section>
   );
 }
 
