@@ -29,7 +29,7 @@ values (1, 5)
 on conflict (id) do nothing;
 
 insert into slides (sort_order, image_url, title, subtitle, link)
-select 0, '', 'Premium Banner — Your Business Here', 'rotating banner ad', ''
+select 0, '/banner-sample.jpg', 'Premium Banner — Your Business Here', 'rotating banner ad', ''
 where not exists (select 1 from slides);
 
 insert into slides (sort_order, image_url, title, subtitle, link)
