@@ -61,6 +61,9 @@ export function whatsappHref(raw: string, message: string): string | null {
 export function safeHttp(value: string): string {
   const trimmed = value.trim();
   if (!trimmed) return "";
+  if (trimmed.startsWith("/") && !trimmed.startsWith("//") && !trimmed.includes("..") && !trimmed.includes("\\")) {
+    return trimmed.slice(0, 500);
+  }
   try {
     const url = new URL(trimmed);
     if (url.protocol !== "https:" && url.protocol !== "http:") return "";

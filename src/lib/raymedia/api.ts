@@ -68,7 +68,7 @@ const FALLBACK_DIRECTORY: Directory = {
     {
       id: 1,
       sortOrder: 0,
-      imageUrl: "",
+      imageUrl: "/banner-sample.jpg",
       title: "Premium Banner — Your Business Here",
       subtitle: "rotating banner ad",
       link: "",

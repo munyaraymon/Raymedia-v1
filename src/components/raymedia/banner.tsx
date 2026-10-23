@@ -29,7 +29,7 @@ export function SponsorBanner({
 
   if (!slide) return null;
 
-  const image = slide.imageUrl && !broken[slide.id] ? slide.imageUrl : "";
+  const image = slide.imageUrl && !broken[slide.id] ? slide.imageUrl : !broken[slide.id] ? "/banner-sample.jpg" : "";
   const open = () => {
     if (!slide.link) return;
     window.open(slide.link, "_blank", "noopener,noreferrer");

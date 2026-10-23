@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { addBusiness, checkPin, removeBusiness, saveBanner } from "@/lib/raymedia/api";
 import { CATEGORIES, categoryLabel, type Directory } from "@/lib/raymedia/model";
 
-const PIN_KEY = "raymedia-admin-pin";
+const TEST_BANNER = "/banner-sample.jpg";
 
 const fieldClass =
   "h-12 w-full rounded-xl border border-line bg-surface px-3 text-base text-fg outline-none placeholder:text-muted focus:border-gold";
@@ -41,9 +41,8 @@ export function AdminScreen({ directory }: { directory: Directory }) {
   const [unlocked, setUnlocked] = useState(false);
   const [gateError, setGateError] = useState("");
   const [checking, setChecking] = useState(false);
-
-  const [intervalSeconds, setIntervalSeconds] = useState(directory.intervalSeconds);
   const [slides, setSlides] = useState<SlideDraft[]>(() => draftsFrom(directory));
+  const [intervalSeconds, setIntervalSeconds] = useState(directory.intervalSeconds || 5);
   const [bannerNote, setBannerNote] = useState("");
   const [bannerError, setBannerError] = useState("");
   const [savingBanner, setSavingBanner] = useState(false);
@@ -60,31 +59,12 @@ export function AdminScreen({ directory }: { directory: Directory }) {
   const [listings, setListings] = useState(directory.businesses);
   const [pendingRemove, setPendingRemove] = useState<number | null>(null);
 
-  useEffect(() => {
-    const stored = sessionStorage.getItem(PIN_KEY);
-    if (!stored) return;
-    let cancelled = false;
-    verify({ data: { pin: stored } })
-      .then(() => {
-        if (cancelled) return;
-        setPin(stored);
-        setUnlocked(true);
-      })
-      .catch(() => {
-        sessionStorage.removeItem(PIN_KEY);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [verify]);
-
   async function unlock(event: React.FormEvent) {
     event.preventDefault();
     setChecking(true);
     setGateError("");
     try {
       await verify({ data: { pin } });
-      sessionStorage.setItem(PIN_KEY, pin);
       setUnlocked(true);
     } catch {
       setGateError("Wrong password");
@@ -220,9 +200,16 @@ export function AdminScreen({ directory }: { directory: Directory }) {
                       <input
                         value={slide.imageUrl}
                         onChange={(event) => updateSlide(index, { imageUrl: event.target.value })}
-                        placeholder="https://i.postimg.cc/…"
+                        placeholder="/banner-sample.jpg"
                         className={`${fieldClass} mt-1`}
                       />
+                      <button
+                        type="button"
+                        onClick={() => updateSlide(index, { imageUrl: TEST_BANNER })}
+                        className="mt-2 text-xs font-semibold text-gold"
+                      >
+                        Use test picture
+                      </button>
                     </label>
                     <label className="mt-2 block text-xs text-muted">
                       Big title
