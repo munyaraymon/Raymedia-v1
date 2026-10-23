@@ -41,33 +41,35 @@ export function SponsorBanner({
         type="button"
         onClick={open}
         disabled={!slide.link}
-        className="w-full rounded-card border border-gold/80 bg-card px-4 py-4 text-left disabled:cursor-default"
+        className={`w-full rounded-2xl border border-gold/80 bg-card text-left disabled:cursor-default ${docked ? "px-3 py-2" : "rounded-card px-4 py-4"}`}
       >
         <p className="text-xs font-medium tracking-wide text-muted">AD · Sponsored</p>
         {image ? (
           <img
             src={image}
             alt=""
-            className="ray-swap mt-3 h-40 w-full rounded-2xl object-cover"
+            className={`ray-swap w-full rounded-xl object-cover ${docked ? "mt-1.5 h-20" : "mt-3 h-40 rounded-2xl"}`}
             onError={() => setBroken((current) => ({ ...current, [slide.id]: true }))}
           />
         ) : null}
-        <div className="mt-3 flex items-start gap-3">
+        <div className={`flex items-start gap-3 ${docked ? "mt-1.5" : "mt-3"}`}>
           {image ? null : (
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface text-gold">
               <RefreshCw className="size-5" aria-hidden="true" />
             </span>
           )}
           <span className="min-w-0">
-            <span className="block text-base font-semibold leading-snug text-fg">{slide.title}</span>
-            {slide.subtitle ? (
+            <span className={`block font-semibold leading-snug text-fg ${docked ? "truncate text-sm" : "text-base"}`}>
+              {slide.title}
+            </span>
+            {slide.subtitle && !docked ? (
               <span className="mt-1 block text-sm leading-snug text-muted">{slide.subtitle}</span>
             ) : null}
           </span>
         </div>
       </button>
       {count > 1 ? (
-        <div className="mt-3 flex justify-center gap-2" role="tablist" aria-label="Slides">
+        <div className={`flex justify-center gap-2 ${docked ? "mt-1.5" : "mt-3"}`} role="tablist" aria-label="Slides">
           {slides.map((item, dot) => (
             <button
               key={item.id}

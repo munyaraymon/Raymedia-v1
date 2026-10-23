@@ -23,7 +23,6 @@ export function HomeScreen({
   const active = CATEGORIES.find((item) => item.id === category);
 
   const visibleCategories = CATEGORIES.filter((item) => item.home);
-  const moreCategories = CATEGORIES.filter((item) => !item.home);
 
   const matches = useMemo(() => {
     if (!needle) return [];
@@ -41,7 +40,7 @@ export function HomeScreen({
 
   return (
     <div className="min-h-dvh bg-bg text-fg">
-      <div className="mx-auto w-full max-w-[440px] px-4 pb-80 pt-3">
+      <div className="mx-auto w-full max-w-[440px] px-4 pb-48 pt-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2">
             <TikTokMark />
@@ -110,45 +109,27 @@ export function HomeScreen({
           </section>
         ) : (
           <>
-            <div className="flex min-h-[calc(100dvh-20rem)] flex-col">
-              <h2 className="mt-4 font-display text-xl font-bold leading-tight text-gold">Find in Randburg</h2>
-              <div className="mt-2 grid grid-cols-3 gap-2">
-                {visibleCategories.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => navigate({ to: "/", search: { cat: item.id } })}
-                    className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border border-gold/80 bg-card px-1.5 py-2 text-center"
-                  >
-                    <CategoryGlyph id={item.id} />
-                    <span className="text-[11px] font-semibold leading-tight text-fg">{item.short}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <h2 className="text-xs font-semibold tracking-[0.16em] text-muted">MORE</h2>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {moreCategories.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => navigate({ to: "/", search: { cat: item.id } })}
-                    className="flex min-h-16 items-center justify-center gap-2 rounded-2xl border border-gold/80 bg-card px-3 py-2 text-center"
-                  >
-                    <CategoryGlyph id={item.id} />
-                    <span className="text-sm font-semibold leading-tight text-fg">{item.short}</span>
-                  </button>
-                ))}
-              </div>
+            <h2 className="mt-3 font-display text-lg font-bold leading-tight text-gold">Find in Randburg</h2>
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              {visibleCategories.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => navigate({ to: "/", search: { cat: item.id } })}
+                  className="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl border border-gold/80 bg-card px-1 py-1.5 text-center"
+                >
+                  <CategoryGlyph id={item.id} />
+                  <span className="text-[11px] font-semibold leading-tight text-fg">{item.short}</span>
+                </button>
+              ))}
             </div>
           </>
         )}
         <ContactUs />
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 flex justify-center bg-gradient-to-t from-bg from-70% to-transparent px-4 pb-3 pt-6">
-        <div className="w-full max-w-[440px]">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg">
+        <div className="mx-auto w-full max-w-[440px] px-3 py-2">
           <SponsorBanner slides={directory.slides} intervalSeconds={directory.intervalSeconds} docked />
         </div>
       </div>
@@ -160,7 +141,7 @@ function ContactUs() {
   const href = whatsappHref("27739422476", "Hi RAYMEDIA, I would like to advertise or list on the directory.");
   if (!href) return null;
   return (
-    <section className="mt-6 rounded-card border border-line bg-card px-4 py-4">
+    <section className="mt-3 rounded-2xl border border-line bg-card px-3 py-3">
       <h2 className="font-display text-lg font-bold text-gold">Contact us</h2>
       <p className="mt-1 text-sm leading-relaxed text-muted">
         Book the banner, list a business, or ask about a room in Randburg.
