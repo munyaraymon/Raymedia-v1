@@ -54,30 +54,46 @@ export function HomeScreen({
           </Link>
         </div>
 
-        <form
-          className="mt-3 flex gap-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-          }}
-        >
-          <label className="sr-only" htmlFor="find">
-            Search local services
-          </label>
-          <input
-            id="find"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search pizza, plumber, nails..."
-            className="h-10 min-w-0 flex-1 rounded-2xl border border-line bg-surface px-3 text-sm text-fg outline-none placeholder:text-muted focus:border-gold"
-          />
-          <button
-            type="submit"
-            className="grid size-10 shrink-0 place-items-center rounded-xl bg-gold text-ink"
-            aria-label="Search"
+        <div className="mt-3 flex items-center gap-2">
+          {!needle && !active ? (
+            <h2 className="shrink-0 font-display text-base font-bold leading-none text-gold">Find in Randburg</h2>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("");
+                navigate({ to: "/", search: { cat: "" } });
+              }}
+              className="shrink-0 text-sm font-semibold text-gold"
+            >
+              Find in Randburg
+            </button>
+          )}
+          <form
+            className="ml-auto flex min-w-0 flex-1 gap-1"
+            onSubmit={(event) => {
+              event.preventDefault();
+            }}
           >
-            <SearchGlyph />
-          </button>
-        </form>
+            <label className="sr-only" htmlFor="find">
+              Search local services
+            </label>
+            <input
+              id="find"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search..."
+              className="h-8 min-w-0 flex-1 rounded-lg border border-line bg-surface px-2 text-xs text-fg outline-none placeholder:text-muted focus:border-gold"
+            />
+            <button
+              type="submit"
+              className="grid size-8 shrink-0 place-items-center rounded-lg bg-gold text-ink"
+              aria-label="Search"
+            >
+              <SearchGlyph />
+            </button>
+          </form>
+        </div>
 
         {needle ? (
           <section className="mt-4">
@@ -108,9 +124,7 @@ export function HomeScreen({
             )}
           </section>
         ) : (
-          <>
-            <h2 className="mt-3 font-display text-lg font-bold leading-tight text-gold">Find in Randburg</h2>
-            <div className="mt-2 grid grid-cols-3 gap-1.5">
+          <div className="mt-2 grid grid-cols-3 gap-1.5">
               {visibleCategories.map((item) => (
                 <button
                   key={item.id}
@@ -123,7 +137,6 @@ export function HomeScreen({
                 </button>
               ))}
             </div>
-          </>
         )}
         <ContactUs />
       </div>
@@ -141,18 +154,18 @@ function ContactUs() {
   const href = whatsappHref("27739422476", "Hi RAYMEDIA, I would like to advertise or list on the directory.");
   if (!href) return null;
   return (
-    <section className="mt-3 rounded-2xl border border-line bg-card px-3 py-3">
-      <h2 className="font-display text-lg font-bold text-gold">Contact us</h2>
-      <p className="mt-1 text-sm leading-relaxed text-muted">
-        Book the banner, list a business, or ask about a room in Randburg.
-      </p>
+    <section className="mt-2 rounded-xl border border-line bg-card px-3 py-2">
+      <h2 className="text-[11px] font-semibold tracking-[0.14em] text-gold">CONTACT US</h2>
       <a
-        href={href}
+        href={href ?? undefined}
         target="_blank"
         rel="noreferrer"
-        className="mt-3 inline-flex h-11 items-center rounded-full bg-gold px-4 text-sm font-semibold text-ink"
+        className="mt-1 block text-sm font-semibold leading-5 text-fg"
       >
-        WhatsApp 073 942 2476
+        073 942 2476
+      </a>
+      <a href="mailto:raymediav1@gmail.com" className="block text-sm font-semibold leading-5 text-fg">
+        raymediav1@gmail.com
       </a>
     </section>
   );
