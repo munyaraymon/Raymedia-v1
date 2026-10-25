@@ -8,7 +8,6 @@ import {
   type Slide,
 } from "@/lib/raymedia/model";
 
-const ADMIN_PIN = "ray1234";
 const MAX_SLIDES = 8;
 const MAX_BUSINESSES = 200;
 
@@ -31,8 +30,17 @@ type BusinessRow = {
   message: string;
 };
 
-function assertPin(pin: string) {
-  if (pin !== ADMIN_PIN) throw new Error("Wrong password");
+async function assertPin(pin: string) {
+  const { expectedPin } = await import("./pin.server");
+  const expected = await expectedPin();
+  if (!expected) throw new Error("Admin password is not set on the server yet");
+  if (pin !== expected) throw new Error("Wrong password");
+}
+
+function assertCanSave() {
+  if (process.env.VERCEL && !process.env.DATABASE_URL?.trim()) {
+    throw new Error("Add DATABASE_URL in the Vercel project settings, then redeploy. A save does not reach every visitor until that is set.");
+  }
 }
 
 function clip(value: string, max: number) {
@@ -68,7 +76,7 @@ const FALLBACK_DIRECTORY: Directory = {
     {
       id: 1,
       sortOrder: 0,
-      imageUrl: "/banner-sample.jpg",
+      imageUrl: "",
       title: "Premium Banner — Your Business Here",
       subtitle: "rotating banner ad",
       link: "",
@@ -83,6 +91,7 @@ const FALLBACK_DIRECTORY: Directory = {
     },
   ],
   businesses: [],
+  shared: false,
 };
 
 async function readDirectory(): Promise<Directory> {
@@ -113,6 +122,7 @@ async function readDirectoryFromDb(): Promise<Directory> {
     intervalSeconds: settings[0]?.interval_seconds ?? 5,
     slides: slides.map(mapSlide),
     businesses: businesses.map(mapBusiness),
+    shared: Boolean(process.env.DATABASE_URL?.trim()),
   };
 }
 
@@ -123,7 +133,7 @@ export const getDirectory = createServerFn({ method: "GET" }).handler(async () =
 export const checkPin = createServerFn({ method: "POST" })
   .validator((input: { pin: string }) => input)
   .handler(async ({ data }) => {
-    assertPin(data.pin);
+    await assertPin(data.pin);
     return { ok: true as const };
   });
 
@@ -137,7 +147,8 @@ type SlideInput = {
 export const saveBanner = createServerFn({ method: "POST" })
   .validator((input: { pin: string; intervalSeconds: number; slides: SlideInput[] }) => input)
   .handler(async ({ data }) => {
-    assertPin(data.pin);
+    await assertPin(data.pin);
+    assertCanSave();
     const interval = Math.min(30, Math.max(2, Math.round(Number(data.intervalSeconds) || 5)));
     const slides = (Array.isArray(data.slides) ? data.slides : []).slice(0, MAX_SLIDES).map((slide) => ({
       imageUrl: safeHttp(clip(slide.imageUrl ?? "", 500)),
@@ -183,7 +194,8 @@ export const addBusiness = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data }) => {
-    assertPin(data.pin);
+    await assertPin(data.pin);
+    assertCanSave();
     if (!isCategoryId(data.category)) throw new Error("Pick a category");
     const name = clip(data.name ?? "", 80);
     if (!name) throw new Error("Business name is required");
@@ -207,7 +219,8 @@ export const addBusiness = createServerFn({ method: "POST" })
 export const removeBusiness = createServerFn({ method: "POST" })
   .validator((input: { pin: string; id: number }) => input)
   .handler(async ({ data }) => {
-    assertPin(data.pin);
+    await assertPin(data.pin);
+    assertCanSave();
     const id = Number(data.id);
     if (!Number.isInteger(id)) throw new Error("Missing listing");
     const sql = await getSql();

@@ -145,6 +145,11 @@ export function AdminScreen({ directory }: { directory: Directory }) {
         </Link>
         <p className="mt-3 font-display text-sm font-bold tracking-[0.18em] text-gold">RAYMEDIA ADMIN</p>
         <h1 className="mt-1 font-display text-3xl font-extrabold text-fg">Owner controls</h1>
+        {directory.shared ? null : (
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            A save on the public site reaches every visitor only after DATABASE_URL is set in Vercel.
+          </p>
+        )}
 
         {unlocked ? null : (
           <form onSubmit={unlock} className="mt-6 rounded-card border border-gold/70 bg-card p-4">

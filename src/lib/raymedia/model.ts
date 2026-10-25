@@ -37,6 +37,7 @@ export type Directory = {
   intervalSeconds: number;
   slides: Slide[];
   businesses: Business[];
+  shared: boolean;
 };
 
 export function categoryLabel(id: string): string {
