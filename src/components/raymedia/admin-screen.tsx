@@ -5,7 +5,7 @@ import { useState } from "react";
 import { addBusiness, checkPin, removeBusiness, saveBanner } from "@/lib/raymedia/api";
 import { CATEGORIES, categoryLabel, type Directory } from "@/lib/raymedia/model";
 
-const TEST_BANNER = "/banner-sample.jpg";
+const TEST_BANNER = "/banner-raymedia.jpg";
 
 const fieldClass =
   "h-12 w-full rounded-xl border border-line bg-surface px-3 text-base text-fg outline-none placeholder:text-muted focus:border-gold";
@@ -205,7 +205,7 @@ export function AdminScreen({ directory }: { directory: Directory }) {
                       <input
                         value={slide.imageUrl}
                         onChange={(event) => updateSlide(index, { imageUrl: event.target.value })}
-                        placeholder="/banner-sample.jpg"
+                        placeholder="/banner-raymedia.jpg"
                         className={`${fieldClass} mt-1`}
                       />
                       <button

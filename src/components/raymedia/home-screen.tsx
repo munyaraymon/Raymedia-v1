@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useMemo, useState } from "react";
-import { CategoryGlyph, SearchGlyph, TikTokMark } from "@/components/raymedia/icons";
+import { CategoryGlyph, SearchGlyph } from "@/components/raymedia/icons";
 import { SponsorBanner } from "@/components/raymedia/banner";
 import {
   CATEGORIES,
@@ -42,10 +42,7 @@ export function HomeScreen({
     <div className="min-h-dvh bg-bg text-fg">
       <div className="mx-auto w-full max-w-[440px] px-4 pb-48 pt-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <TikTokMark />
-            <h1 className="truncate font-display text-2xl font-extrabold tracking-tight text-gold">RAYMEDIA</h1>
-          </div>
+          <h1 className="truncate font-display text-2xl font-extrabold tracking-tight text-gold">RAYMEDIA</h1>
           <Link
             to="/admin"
             className="inline-flex h-8 shrink-0 items-center rounded-full border border-line bg-surface px-3 text-[10px] font-semibold tracking-[0.16em] text-muted"
