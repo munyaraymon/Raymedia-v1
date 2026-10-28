@@ -28,6 +28,8 @@ type BusinessRow = {
   offer: string;
   area: string;
   message: string;
+  image_url: string;
+  description: string;
 };
 
 async function assertPin(pin: string) {
@@ -67,6 +69,8 @@ function mapBusiness(row: BusinessRow): Business {
     offer: row.offer,
     area: row.area,
     message: row.message,
+    imageUrl: row.image_url ?? "",
+    description: row.description ?? "",
   };
 }
 
@@ -114,7 +118,7 @@ async function readDirectoryFromDb(): Promise<Directory> {
     order by sort_order asc, id asc
   `;
   const businesses = await sql<BusinessRow>`
-    select id, category, name, whatsapp, offer, area, message
+    select id, category, name, whatsapp, offer, area, message, image_url, description
     from businesses
     order by id desc
   `;
@@ -191,6 +195,8 @@ export const addBusiness = createServerFn({ method: "POST" })
       offer: string;
       area: string;
       message: string;
+      imageUrl: string;
+      description: string;
     }) => input,
   )
   .handler(async ({ data }) => {
@@ -203,14 +209,16 @@ export const addBusiness = createServerFn({ method: "POST" })
     const count = await sql<{ n: number }>`select count(*)::int as n from businesses`;
     if ((count[0]?.n ?? 0) >= MAX_BUSINESSES) throw new Error("Listing limit reached");
     await sql`
-      insert into businesses (category, name, whatsapp, offer, area, message)
+      insert into businesses (category, name, whatsapp, offer, area, message, image_url, description)
       values (
         ${data.category},
         ${name},
         ${clip(data.whatsapp ?? "", 40)},
         ${clip(data.offer ?? "", 120)},
         ${clip(data.area ?? "", 80)},
-        ${clip(data.message ?? "", 300)}
+        ${clip(data.message ?? "", 300)},
+        ${safeHttp(clip(data.imageUrl ?? "", 500))},
+        ${clip(data.description ?? "", 280)}
       )
     `;
     return readDirectory();

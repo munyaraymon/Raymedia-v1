@@ -31,6 +31,8 @@ export type Business = {
   offer: string;
   area: string;
   message: string;
+  imageUrl: string;
+  description: string;
 };
 
 export type Directory = {

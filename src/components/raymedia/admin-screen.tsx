@@ -18,6 +18,31 @@ type SlideDraft = {
   link: string;
 };
 
+function Overview({ listings, slides }: { listings: Directory["businesses"]; slides: number }) {
+  const rooms = listings.filter((item) => item.category === "property").length;
+  const withPhoto = listings.filter((item) => item.imageUrl).length;
+  const cards = [
+    ["Active listings", String(listings.length)],
+    ["Rooms listed", String(rooms)],
+    ["With a photo", String(withPhoto)],
+    ["Banner slides", String(slides)],
+  ];
+  return (
+    <section className="mt-4 rounded-card border border-line bg-card p-3">
+      <h2 className="text-sm font-bold text-fg">Overview</h2>
+      <p className="mt-1 text-xs text-muted">Live counts from the site. Visitors are not counted yet.</p>
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        {cards.map(([label, value]) => (
+          <div key={label} className="rounded-xl bg-surface px-3 py-2">
+            <p className="text-[11px] text-muted">{label}</p>
+            <p className="mt-1 text-xl font-semibold text-fg">{value}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function draftsFrom(directory: Directory): SlideDraft[] {
   const source = directory.slides.length
     ? directory.slides
@@ -53,6 +78,8 @@ export function AdminScreen({ directory }: { directory: Directory }) {
   const [offer, setOffer] = useState("");
   const [area, setArea] = useState("");
   const [message, setMessage] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [description, setDescription] = useState("");
   const [feedNote, setFeedNote] = useState("");
   const [feedError, setFeedError] = useState("");
   const [savingFeed, setSavingFeed] = useState(false);
@@ -109,7 +136,7 @@ export function AdminScreen({ directory }: { directory: Directory }) {
     setFeedNote("");
     try {
       const next = await addBusinessFn({
-        data: { pin, category, name, whatsapp, offer, area, message },
+        data: { pin, category, name, whatsapp, offer, area, message, imageUrl, description },
       });
       setListings(next.businesses);
       setName("");
@@ -117,6 +144,8 @@ export function AdminScreen({ directory }: { directory: Directory }) {
       setOffer("");
       setArea("");
       setMessage("");
+      setImageUrl("");
+      setDescription("");
       setFeedNote("Live on the home page for every visitor.");
     } catch (error) {
       setFeedError(error instanceof Error ? error.message : "Could not add that business");
@@ -150,6 +179,8 @@ export function AdminScreen({ directory }: { directory: Directory }) {
             A save on the public site reaches every visitor only after DATABASE_URL is set in Vercel.
           </p>
         )}
+
+        {unlocked ? <Overview listings={listings} slides={slides.length} /> : null}
 
         {unlocked ? null : (
           <form onSubmit={unlock} className="mt-6 rounded-card border border-gold/70 bg-card p-4">
@@ -313,6 +344,26 @@ export function AdminScreen({ directory }: { directory: Directory }) {
                 onChange={(event) => setWhatsapp(event.target.value)}
                 placeholder="27…"
                 inputMode="tel"
+                className={`${fieldClass} mt-1`}
+              />
+              <label className="mt-3 block text-xs text-muted" htmlFor="biz-image">
+                Picture link
+              </label>
+              <input
+                id="biz-image"
+                value={imageUrl}
+                onChange={(event) => setImageUrl(event.target.value)}
+                placeholder="https://…"
+                className={`${fieldClass} mt-1`}
+              />
+              <label className="mt-3 block text-xs text-muted" htmlFor="biz-description">
+                Description
+              </label>
+              <input
+                id="biz-description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="What they do, in one or two lines"
                 className={`${fieldClass} mt-1`}
               />
               <label className="mt-3 block text-xs text-muted" htmlFor="biz-offer">
