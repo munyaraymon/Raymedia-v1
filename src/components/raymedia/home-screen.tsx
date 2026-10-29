@@ -110,7 +110,15 @@ export function HomeScreen({
 
         {!needle && savedOnly ? (
           <section className="mt-4">
-            <h2 className="font-display text-2xl font-bold text-gold">Saved</h2>
+            <button
+              type="button"
+              onClick={() => setSavedOnly(false)}
+              className="inline-flex h-9 items-center gap-1 text-sm font-medium text-gold"
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+              All categories
+            </button>
+            <h2 className="mt-1 font-display text-2xl font-bold text-gold">Saved</h2>
             <p className="mt-1 text-sm text-muted">Only on this phone. Another person does not see your list.</p>
             {savedBusinesses.length === 0 ? (
               <p className="mt-4 rounded-card border border-line bg-card px-4 py-5 text-sm leading-relaxed text-muted">
