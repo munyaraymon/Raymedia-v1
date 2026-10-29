@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
-import { addBusiness, checkPin, removeBusiness, saveBanner } from "@/lib/raymedia/api";
+import { addBusiness, checkPin, removeBusiness, saveBanner, updateBusiness } from "@/lib/raymedia/api";
 import { CATEGORIES, categoryLabel, type Directory } from "@/lib/raymedia/model";
 
 const TEST_BANNER = "/banner-raymedia.jpg";
@@ -60,6 +60,7 @@ export function AdminScreen({ directory }: { directory: Directory }) {
   const verify = useServerFn(checkPin);
   const saveBannerFn = useServerFn(saveBanner);
   const addBusinessFn = useServerFn(addBusiness);
+  const updateBusinessFn = useServerFn(updateBusiness);
   const removeBusinessFn = useServerFn(removeBusiness);
 
   const [pin, setPin] = useState("");
@@ -84,6 +85,7 @@ export function AdminScreen({ directory }: { directory: Directory }) {
   const [feedError, setFeedError] = useState("");
   const [savingFeed, setSavingFeed] = useState(false);
   const [listings, setListings] = useState(directory.businesses);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [pendingRemove, setPendingRemove] = useState<number | null>(null);
 
   async function unlock(event: React.FormEvent) {
@@ -135,9 +137,13 @@ export function AdminScreen({ directory }: { directory: Directory }) {
     setFeedError("");
     setFeedNote("");
     try {
-      const next = await addBusinessFn({
-        data: { pin, category, name, whatsapp, offer, area, message, imageUrl, description },
-      });
+      const next = editingId
+        ? await updateBusinessFn({
+            data: { pin, id: editingId, category, name, whatsapp, offer, area, message, imageUrl, description },
+          })
+        : await addBusinessFn({
+            data: { pin, category, name, whatsapp, offer, area, message, imageUrl, description },
+          });
       setListings(next.businesses);
       setName("");
       setWhatsapp("");
@@ -146,12 +152,43 @@ export function AdminScreen({ directory }: { directory: Directory }) {
       setMessage("");
       setImageUrl("");
       setDescription("");
-      setFeedNote("Live on the home page for every visitor.");
+      setEditingId(null);
+      setFeedNote(editingId ? "Updated for every visitor." : "Live on the home page for every visitor.");
     } catch (error) {
       setFeedError(error instanceof Error ? error.message : "Could not add that business");
     } finally {
       setSavingFeed(false);
     }
+  }
+
+  function startEdit(id: number) {
+    const business = listings.find((item) => item.id === id);
+    if (!business) return;
+    setEditingId(id);
+    setCategory(business.category);
+    setName(business.name);
+    setWhatsapp(business.whatsapp);
+    setOffer(business.offer);
+    setArea(business.area);
+    setMessage(business.message);
+    setImageUrl(business.imageUrl);
+    setDescription(business.description);
+    setFeedError("");
+    setFeedNote("");
+    setPendingRemove(null);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setName("");
+    setWhatsapp("");
+    setOffer("");
+    setArea("");
+    setMessage("");
+    setImageUrl("");
+    setDescription("");
+    setFeedNote("");
+    setFeedError("");
   }
 
   async function onRemove(id: number) {
@@ -314,8 +351,10 @@ export function AdminScreen({ directory }: { directory: Directory }) {
             </form>
 
             <form onSubmit={onAddBusiness} className="mt-4 rounded-card border border-line bg-card p-4">
-              <h2 className="text-sm font-bold tracking-wide text-gold">ADD BUSINESS</h2>
-              <p className="mt-1 text-sm text-muted">Saves for all visitors. Offer shows on the listing.</p>
+              <h2 className="text-sm font-bold tracking-wide text-gold">{editingId ? "EDIT LISTING" : "ADD BUSINESS"}</h2>
+              <p className="mt-1 text-sm text-muted">
+                {editingId ? "Change this listing, then save. It updates for everyone." : "Saves for all visitors. Offer shows on the listing."}
+              </p>
               <label className="mt-4 block text-xs font-medium text-muted" htmlFor="category">
                 Category
               </label>
@@ -404,8 +443,13 @@ export function AdminScreen({ directory }: { directory: Directory }) {
                 disabled={savingFeed}
                 className="mt-4 h-12 w-full rounded-xl bg-gold text-sm font-bold tracking-wide text-ink disabled:opacity-60"
               >
-                {savingFeed ? "SAVING…" : "SAVE TO FEED — MAKE LIVE"}
+                {savingFeed ? "SAVING…" : editingId ? "UPDATE LISTING" : "SAVE TO FEED — MAKE LIVE"}
               </button>
+              {editingId ? (
+                <button type="button" onClick={cancelEdit} className="mt-2 h-10 w-full text-sm text-muted">
+                  Cancel edit
+                </button>
+              ) : null}
             </form>
 
             <section className="mt-4">
@@ -438,13 +482,18 @@ export function AdminScreen({ directory }: { directory: Directory }) {
                         </button>
                       </div>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => setPendingRemove(business.id)}
-                        className="mt-1 h-10 text-xs text-muted"
-                      >
-                        Remove
-                      </button>
+                      <div className="mt-1 flex gap-3">
+                        <button type="button" onClick={() => startEdit(business.id)} className="h-10 text-xs font-semibold text-gold">
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPendingRemove(business.id)}
+                          className="h-10 text-xs text-muted"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     )}
                   </li>
                 ))}

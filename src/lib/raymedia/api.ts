@@ -224,6 +224,47 @@ export const addBusiness = createServerFn({ method: "POST" })
     return readDirectory();
   });
 
+export const updateBusiness = createServerFn({ method: "POST" })
+  .validator(
+    (input: {
+      pin: string;
+      id: number;
+      category: string;
+      name: string;
+      whatsapp: string;
+      offer: string;
+      area: string;
+      message: string;
+      imageUrl: string;
+      description: string;
+    }) => input,
+  )
+  .handler(async ({ data }) => {
+    await assertPin(data.pin);
+    assertCanSave();
+    if (!isCategoryId(data.category)) throw new Error("Pick a category");
+    const name = clip(data.name ?? "", 80);
+    if (!name) throw new Error("Business name is required");
+    const id = Number(data.id);
+    if (!Number.isInteger(id)) throw new Error("Missing listing");
+    const sql = await getSql();
+    const rows = await sql<{ id: number }>`
+      update businesses
+      set category = ${data.category},
+          name = ${name},
+          whatsapp = ${clip(data.whatsapp ?? "", 40)},
+          offer = ${clip(data.offer ?? "", 120)},
+          area = ${clip(data.area ?? "", 80)},
+          message = ${clip(data.message ?? "", 300)},
+          image_url = ${safeHttp(clip(data.imageUrl ?? "", 500))},
+          description = ${clip(data.description ?? "", 280)}
+      where id = ${id}
+      returning id
+    `;
+    if (!rows.length) throw new Error("That listing is no longer there");
+    return readDirectory();
+  });
+
 export const removeBusiness = createServerFn({ method: "POST" })
   .validator((input: { pin: string; id: number }) => input)
   .handler(async ({ data }) => {
