@@ -74,6 +74,7 @@ export function HomeScreen({
               type="button"
               onClick={() => {
                 setQuery("");
+                setSavedOnly(false);
                 navigate({ to: "/", search: { cat: "" } });
               }}
               className="shrink-0 text-sm font-semibold text-gold"
@@ -107,7 +108,7 @@ export function HomeScreen({
           </form>
         </div>
 
-        {savedOnly ? (
+        {!needle && savedOnly ? (
           <section className="mt-4">
             <h2 className="font-display text-2xl font-bold text-gold">Saved</h2>
             <p className="mt-1 text-sm text-muted">Only on this phone. Another person does not see your list.</p>

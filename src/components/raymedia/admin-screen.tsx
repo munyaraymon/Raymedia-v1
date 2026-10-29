@@ -346,25 +346,26 @@ export function AdminScreen({ directory }: { directory: Directory }) {
                 inputMode="tel"
                 className={`${fieldClass} mt-1`}
               />
-              <label className="mt-3 block text-xs text-muted" htmlFor="biz-image">
+              <label className="mt-3 block text-xs text-muted" htmlFor="biz-photo">
                 Picture link
               </label>
               <input
-                id="biz-image"
+                id="biz-photo"
                 value={imageUrl}
                 onChange={(event) => setImageUrl(event.target.value)}
-                placeholder="https://…"
+                placeholder="https://… a wide photo, not a phone file"
                 className={`${fieldClass} mt-1`}
               />
               <label className="mt-3 block text-xs text-muted" htmlFor="biz-description">
                 Description
               </label>
-              <input
+              <textarea
                 id="biz-description"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
-                placeholder="What they do, in one or two lines"
-                className={`${fieldClass} mt-1`}
+                rows={3}
+                placeholder="What they do, or for a room: available now"
+                className="mt-1 w-full resize-none rounded-xl border border-line bg-surface px-3 py-2 text-base text-fg outline-none placeholder:text-muted focus:border-gold"
               />
               <label className="mt-3 block text-xs text-muted" htmlFor="biz-offer">
                 Offer
